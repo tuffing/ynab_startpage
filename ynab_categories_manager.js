@@ -3,26 +3,42 @@ class YnabCategoriesManager {
 		this.ynab_auth = auth;
 	}
 
-	fetch_categories(group_to_display_id) {
+	fetch(group_to_display_id) {
+		let dateString = localStorage.getItem('lastFetch');
+
+		if (!dateString || +dateString + (60000 * 60) < Date.now()) {
+			this.fetch_categories_api(group_to_display_id);
+		}
+		else {
+			this.fetch_categories_cached();
+		}
+	}
+
+	fetch_categories_api(group_to_display_id) {
 		var promise = YnabRequest.request_from_endpoint(`budgets/${budget_id}/categories`, this.ynab_auth);
 
 		promise.then(json => {
-			//json.data.category_groups[0].id
 			if (!'data' in json || !'category_groups' in json.data || !json.data.category_groups.length) {
 				return;
 			}
+
+			localStorage.setItem('lastFetch', Date.now());
 
 			json.data.category_groups.forEach(category_group => {
 				if (category_group.id != group_to_display_id)
 					return;
 
 				this.process_category_group(category_group.categories);
-
 			});
+		});
+	}
 
-		}).finally(() => {
-			localStorage.clear();
-		});	
+	fetch_categories_cached() {
+		let categories = JSON.parse(localStorage.getItem('categories'));
+		if (categories == null)
+			categories = [];
+
+		this.render(categories);
 	}
 
 	process_category_group(group_data) {
@@ -34,6 +50,8 @@ class YnabCategoriesManager {
 
 			categories.push({'name': category.name, 'budgeted': category.budgeted, 'balance': category.balance, 'spent': category.activity});
 		});
+		//console.table(JSON.stringify(categories));
+		localStorage.setItem('categories', JSON.stringify(categories));
 
 		this.render(categories);
 	}

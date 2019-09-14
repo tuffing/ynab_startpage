@@ -25,7 +25,8 @@
 	<script>
 		let auth = new YnabAuth(token);
 		let categories = new YnabCategoriesManager(auth);
-		categories.fetch_categories(display_category_group);
+		//categories.fetch_categories_api(display_category_group);
+		categories.fetch(display_category_group);
 	</script>
 </body>
 </html>
