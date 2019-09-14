@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Start page test suite</title>
+	<meta charset="UTF-8"> 
+	<link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.9.2.css">
+</head>
+<body>
+<div id="qunit"></div>
+<script src="https://code.jquery.com/qunit/qunit-2.9.2.js"></script>
+<script type="text/javascript" src="ynab_auth.js"></script>
+<script type="text/javascript" src="ynab_request.js"></script>
+<script type="text/javascript" src="config_access_token.js"></script>
+
+<script>
+	QUnit.test("authenticate", function( assert ) {
+		let auth = new YnabAuth('abc');
+		assert.equal(auth.get_access_token(), 'abc');
+
+		let auth2 = new YnabAuth();
+		assert.equal(auth2.get_access_token(), 'abc');
+	});
+
+	QUnit.test("get budgets", function( assert ) {
+		let auth = new YnabAuth(token);
+		
+		var promise = YnabRequest.request_from_endpoint('budgets', auth);
+
+		// return the `then` and not the original promise.
+		return promise.then(json => {
+			assert.equal(json.data.budgets[1].id, budget_id);			
+		}).finally(() => {
+			localStorage.clear();
+		});		
+	});
+
+	QUnit.test("get categories", function( assert ) {
+		let auth = new YnabAuth(token);
+		
+		var promise = YnabRequest.request_from_endpoint(`budgets/${budget_id}/categories`, auth);
+
+		// return the `then` and not the original promise.
+		return promise.then(json => {
+			assert.equal(json.data.category_groups[0].id, test_category_group);			
+		}).finally(() => {
+			localStorage.clear();
+		});		
+	});	
+</script>
+</body>
+</html>

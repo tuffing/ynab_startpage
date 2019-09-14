@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Ynab start page</title>
+	<meta charset="UTF-8"> 
+</head>
+<body>
+	<script type="text/javascript" src="ynab_auth.js"></script>
+	<script type="text/javascript" src="ynab_request.js"></script>
+	<script type="text/javascript" src="ynab_categories_manager.js"></script>
+
+	<script type="text/javascript" src="config_access_token.js"></script>
+
+	<div id="Categories"></div>
+
+	<template id="YnabBlock">
+		<div class="category">
+			<span class="name"></span>
+			<span class="budgeted"></span>
+			<span class="balance"></span>
+			<span class="spent"></span>
+		</div>
+	</template>
+
+	<script>
+		let auth = new YnabAuth(token);
+		let categories = new YnabCategoriesManager(auth);
+		categories.fetch_categories(display_category_group);
+	</script>
+</body>
+</html>
