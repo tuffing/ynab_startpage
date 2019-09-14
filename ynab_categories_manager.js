@@ -6,6 +6,7 @@ class YnabCategoriesManager {
 	fetch(group_to_display_id) {
 		let dateString = localStorage.getItem('lastFetch');
 
+		//datestring will be in millseconds. so one minute is 60000
 		if (!dateString || +dateString + (60000 * 60) < Date.now()) {
 			this.fetch_categories_api(group_to_display_id);
 		}
@@ -48,7 +49,7 @@ class YnabCategoriesManager {
 			if (category.hidden || category.budgeted === 0)
 				return;
 
-			categories.push({'name': category.name, 'budgeted': category.budgeted, 'balance': category.balance, 'spent': category.activity});
+			categories.push({'name': category.name, 'budgeted': category.budgeted, 'balance': category.balance, 'spent': Math.abs(category.activity)});
 		});
 		//console.table(JSON.stringify(categories));
 		localStorage.setItem('categories', JSON.stringify(categories));
@@ -69,9 +70,13 @@ class YnabCategoriesManager {
 		var clone = document.importNode(template.content, true);
 
 		clone.querySelector(".name").textContent = name;
-		clone.querySelector(".budgeted").textContent = budgeted;
-		clone.querySelector(".balance").textContent = balance;
-		clone.querySelector(".spent").textContent = spent;
+		//math to work out dash offset for 'progress' is the stroke-dasharray - (stroke-dasharray * percentage / 100)
+		//251.2-(251.2×(spent/budgeted))
+		let percentage = spent/budgeted*100;
+		clone.querySelector(".progress").setAttribute('stroke-dashoffset', 251.2-(251.2*percentage/100));
+
+		if (percentage > 65)
+			clone.querySelector(".progress").classList.add('nearing-complete');
 
 		category_wrapper.appendChild(clone);
 	}
