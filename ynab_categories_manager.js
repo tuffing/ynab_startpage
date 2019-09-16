@@ -75,8 +75,12 @@ class YnabCategoriesManager {
 		let percentage = spent/budgeted*100;
 		clone.querySelector(".progress").setAttribute('stroke-dashoffset', 251.2-(251.2*percentage/100));
 
-		if (percentage > 65)
+		if (percentage > 55)
 			clone.querySelector(".progress").classList.add('nearing-complete');
+
+		if (percentage > 75)
+			clone.querySelector(".progress").classList.add('nearing-complete-alert');
+
 
 		category_wrapper.appendChild(clone);
 	}
