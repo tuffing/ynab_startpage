@@ -3,13 +3,20 @@
 <head>
 	<title>Ynab start page</title>
 	<meta charset="UTF-8"> 
+	<link rel="preload" href="style.css" as="style">
+	<link rel="preload" as="style"  href="https://cdn.jsdelivr.net/gh/tonsky/FiraCode@1.207/distr/fira_code.css">
+
+
 	<link rel="stylesheet" href="style.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/tonsky/FiraCode@1.207/distr/fira_code.css">
+
 </head>
 <body>
 	<script type="text/javascript" src="ynab_auth.js"></script>
 	<script type="text/javascript" src="ynab_request.js"></script>
+	<script type="text/javascript" src="ynab_config_manager.js"></script>
 	<script type="text/javascript" src="ynab_categories_manager.js"></script>
+	<script type="text/javascript" src="ynab_budgets_manager.js"></script>
 
 	<script type="text/javascript" src="config_access_token.js"></script>
 
@@ -38,7 +45,7 @@
 		</div>
 	</template>
 
-	<div id="ConfigWrapper" style="display: none">
+	<div id="ConfigWrapper" class="hide">
 		<div class="config-pane">
 			<div id="Tabs">
 				<div class="tab tab-link-active"><a href="#YnabConfigTab">Ynab</a></div>
@@ -53,22 +60,24 @@
 				<div class="budget-list">
 					<h3>Budgets <button id="YnabFetchBudgets" class="btn" value="Fetch">Fetch</button></h3>
 
-					<label><input type="radio" name="BudgetSelect" value="[budget id]" /> Budget name 1</label>
-					<label><input type="radio" name="BudgetSelect" value="[budget id]" /> Budget name 2</label>
+					<template id="BudgetListTemplate">
+						<input type="radio" name="BudgetSelect" value="[budget id]" id="[budget id]" />  
+						<label for="[budget id]">Budget name 1</label>
+					</template>
+					<div id="AvailableBudgets"></div>
+
+					<p id="NoBudgetAlert">No budgets available, have you fetched any?</p>
 				</div>
 
 				<div class="category-list">
-					<h3>Categories</h3>
-					<select multiple="true">
-						<optgroup label="Group 1">
-							<option value="volvo">Volvo</option>
-							<option value="saab">Saab</option>
-						</optgroup>
-						<optgroup label="Group 2">
-							<option value="mercedes">Mercedes</option>
-							<option value="audi">Audi</option>
-						</optgroup>
-					</select> 
+					<h3>Categories <button id="YnabFetchCategories" class="btn" value="Fetch">Fetch</button></h3>
+
+					<select multiple="multiple" id="AvailableCategories" class="hide"></select>
+
+					<p id="NoCategoriesAlert">No categories loaded.</p>
+
+					<template id="CategoryGroupHeaderTemplate"><optgroup label="Name"/></template>
+					<template id="CategorySelectTemplate"><option value="id">Name</option></template>
 				</div>
 			</div>
 			
@@ -81,7 +90,10 @@
 
 	<script>
 		let auth = new YnabAuth(token);
-		let categories = new YnabCategoriesManager(auth);
+		let budgets = new YnabBudgetsManager(auth);
+		let categories = new YnabCategoriesManager(auth, budgets);
+		let config = new YnabConfigManager(auth, budgets, categories);
+
 		//categories.fetch_categories_api(display_category_group);
 		categories.fetch(display_category_group);
 	</script>

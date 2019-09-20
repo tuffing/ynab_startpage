@@ -1,21 +1,27 @@
 class YnabBudgetsManager {
-	constructor(auth) {
+	constructor(auth, budgetManager) {
 		this.ynab_auth = auth;
+		this.budgetManager = budgetManager;
 	}
 
 	fetch_budgets_api() {
 		var promise = YnabRequest.request_from_endpoint(`budgets`, this.ynab_auth);
 
-		promise.then(json => {
-			if (!'data' in json || !'category_groups' in json.data || !json.data.category_groups.length) {
-				return;
-			}
+		return new Promise((resolve, reject) => {
+			promise.then(json => {
+				let budgets = [];
+				if (!'data' in json || !'budgets' in json.data || !json.data.budgets.length) {
+					resolve(budgets);
+				}
 
-			json.data.category_groups.forEach(category_group => {
-				if (category_group.id != group_to_display_id)
-					return;
+				json.data.budgets.forEach(budget => {
+					budgets.push({'id': budget.id, 'name': budget.name});
+				});
 
-				this.process_category_group(category_group.categories);
+				this.save_budgets(budgets);
+				resolve(budgets);
+			}).catch((err) => {
+				reject(err);
 			});
 		});
 	}
@@ -29,5 +35,20 @@ class YnabBudgetsManager {
 		return budgets;
 	}
 
+	save_budgets(budgets) {
+		localStorage.setItem('budgets', JSON.stringify(budgets));
+	}
 
+	set_selected_budget(budget_id) {
+		this.budget_id = budget_id;
+		localStorage.setItem('budget_id', budget_id);
+	}
+
+	get_selected_budget() {
+		if (!this.budget_id) {
+			this.budget_id = localStorage.getItem('budget_id', budget_id);
+		}
+
+		return this.budget_id;
+	}
 }
