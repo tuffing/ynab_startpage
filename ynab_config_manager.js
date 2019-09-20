@@ -85,7 +85,7 @@ class YnabConfigManager {
 			let opt_group = clone.querySelector("optgroup");
 
 			opt_group.setAttribute('label', group.name);
-			opt_group.setAttribute('id', group.id);
+			opt_group.setAttribute('id', `group-${group.id}`);
 
 			category_wrapper.appendChild(clone);
 
@@ -96,10 +96,12 @@ class YnabConfigManager {
 			var clone = document.importNode(categoryTemplates.content, true);
 			let option = clone.querySelector("option");
 
-			option.setAttribute('id', category.id);
+			option.setAttribute('value', category.id);
 			option.textContent = category.name;
 			//@TODO
 			//let test = groups.get(category.group);
+			let test = document.querySelector(`#group-${category.group}`);
+			document.querySelector(`#group-${category.group}`).appendChild(clone);
 			//groups.get(category.group).querySelector("optgroup").appendChild(clone);
 		});
 	}
