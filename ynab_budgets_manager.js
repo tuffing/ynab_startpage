@@ -46,7 +46,7 @@ class YnabBudgetsManager {
 
 	get_selected_budget() {
 		if (!this.budget_id) {
-			this.budget_id = localStorage.getItem('budget_id', budget_id);
+			this.budget_id = localStorage.getItem('budget_id');
 		}
 
 		return this.budget_id;

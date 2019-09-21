@@ -4,16 +4,61 @@ class YnabCategoriesManager {
 		this.budgetManager = budgetManager;
 	}
 
-	fetch(group_to_display_id) {
-		let dateString = localStorage.getItem('lastFetch');
+	fetch_and_render() {
+		document.querySelectorAll('#Categories .category').forEach(child => child.remove());
+
+		let dateString = localStorage.getItem('last_fetch');
+
+		if (this.get_selected_categories() == null || !this.get_selected_categories().length) {
+			document.querySelector('#Categories').textContent = 'No categories set';
+			return;
+		}
 
 		//datestring will be in millseconds. so one minute is 60000
-		//if (!dateString || +dateString + (60000 * 60) < Date.now()) {
-			//this.fetch_categories_api(group_to_display_id);
-	//	}
-	//	else {
-			this.fetch_categories_cached();
-	//	}
+		if (!dateString || +dateString + (60000 * 60) < Date.now()) {
+			this.fetch_category_data_api();
+		}
+		else {
+			this.fetch_category_data_cached();
+		}
+	}
+
+
+	fetch_category_data_api() {
+		let data = [];
+		let promises = [];
+		this.get_selected_categories().forEach((category) => {
+			let promise = new Promise((resolve, reject) => {
+				var request = YnabRequest.request_from_endpoint(`budgets/${this.budgetManager.get_selected_budget()}/categories/${category}`, this.ynab_auth);
+				request.then(json => {
+					if (!'data' in json || !'category' in json.data) {
+						return;
+					}
+
+					let data_obj = {'name': json.data.category.name, 'id': json.data.category.id, 'budgeted': json.data.category.budgeted, 'balance': json.data.category.balance, 'spent': Math.abs(json.data.category.activity)};
+					data.push(data_obj);
+					resolve(data_obj);
+				}).catch((err) => {
+					reject(err);
+				});
+			});
+			promises.push(promise);
+		});
+
+		Promise.all(promises).then(() => {
+			//@todo order data alphabetically
+			localStorage.setItem('category_data', JSON.stringify(data));
+			localStorage.setItem('last_fetch', Date.now());
+			this.fetch_and_render();
+		});
+	}
+
+	fetch_category_data_cached() {
+		let data = JSON.parse(localStorage.getItem('category_data'));
+		if (data == null)
+			return;
+
+		data.forEach(category => this.render_single(category.name, category.budgeted, category.balance, category.spent));
 	}
 
 	fetch_categories_api() {
@@ -25,13 +70,10 @@ class YnabCategoriesManager {
 					reject();
 				}
 
-				//localStorage.setItem('lastFetch', Date.now());
 				let groupNames = [];
 				let categories = [];
 
 				json.data.category_groups.forEach(category_group => {
-					//if (category_group.id != group_to_display_id)
-					//	return;
 					groupNames.push({'id': category_group.id,'name': category_group.name});
 
 					let group_cats = this.process_category_group(category_group.categories);
@@ -39,7 +81,7 @@ class YnabCategoriesManager {
 				});
 
 				let categoriesList = {'groups': groupNames,'categories': categories};
-				localStorage.setItem('categoriesList', JSON.stringify(categoriesList));
+				localStorage.setItem('categories_list', JSON.stringify(categoriesList));
 				resolve(categoriesList);
 			}).catch((err) => {
 				reject(err);
@@ -48,11 +90,27 @@ class YnabCategoriesManager {
 	}
 
 	fetch_categories_cached() {
-		let categories = JSON.parse(localStorage.getItem('categories'));
+		let categories = JSON.parse(localStorage.getItem('categories_list'));
 		if (categories == null)
 			categories = [];
 
-		this.render(categories);
+		return categories;
+	}
+
+	set_selected_categories(category_ids = []) {
+		this.category_ids = category_ids;
+		localStorage.setItem('category_ids', JSON.stringify(category_ids));
+	}
+
+	get_selected_categories() {
+		if (!this.category_ids) {
+			this.category_ids = JSON.parse(localStorage.getItem('category_ids'));
+
+			if (!this.category_ids)
+				return [];
+		}
+
+		return this.category_ids;
 	}
 
 	process_category_group(group_data) {
@@ -61,17 +119,8 @@ class YnabCategoriesManager {
 		group_data.forEach(category => {
 			categories.push({'name': category.name, 'id': category.id, 'group': category.category_group_id, 'budgeted': category.budgeted, 'balance': category.balance, 'spent': Math.abs(category.activity)});
 		});
-		//console.table(JSON.stringify(categories));
-		//localStorage.setItem('categories', JSON.stringify(categories));
 
-		//this.render(categories);
 		return categories;
-	}
-
-	render(categories = []) {
-		document.querySelectorAll('#Categories .category').forEach(child => child.remove());
-
-		categories.forEach(category => this.render_single(category.name, category.budgeted, category.balance, category.spent));
 	}
 
 	render_single(name, budgeted, balance, spent) {

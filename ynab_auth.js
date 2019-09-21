@@ -6,21 +6,14 @@ class YnabAuth {
 		if (access_token != null) {
 			this.set_access_token(access_token);
 		}
-		else {
-			this.get_access_token_from_storage();
-		}
 	}
-
-	get_access_token() {
-		return this.access_token;
-	}
-
+	
 	set_access_token(access_token) {
 		this.access_token = access_token;
 		localStorage.setItem('token', access_token);
 	}
 
-	get_access_token_from_storage() {
+	get_access_token() {
 		this.access_token = localStorage.getItem('token');
 		return this.access_token;
 	}

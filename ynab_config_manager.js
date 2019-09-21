@@ -1,6 +1,6 @@
 class YnabConfigManager {
 	constructor(auth, budgetManager, categoryManager) {
-		this.ynab_auth = auth;
+		this.ynabAuth = auth;
 		this.budgetManager = budgetManager;
 		this.categoryManager = categoryManager;
 
@@ -12,6 +12,7 @@ class YnabConfigManager {
 
 		document.querySelector('#YnabFetchBudgets').addEventListener('click', event => this.fetch_budgets());
 		document.querySelector('#YnabFetchCategories').addEventListener('click', event => this.fetch_categories());
+		document.querySelector('#AuthKey').addEventListener('change', event => this.set_auth_key(event));
 
 		//set up forms
 		this.fill_in_existing_fields();
@@ -23,6 +24,10 @@ class YnabConfigManager {
 		if (config_wrapper.classList.contains('show')) {
 			config_wrapper.classList.remove('show');
 			config_wrapper.classList.add('hide');
+
+			if (this.categoryManager.get_selected_categories().length) {
+				this.categoryManager.fetch_category_data_api();
+			}
 		}
 		else {
 			config_wrapper.classList.add('show');
@@ -32,14 +37,23 @@ class YnabConfigManager {
 
 	fill_in_existing_fields() {
 		const auth = document.querySelector('#AuthKey');
-		auth.value = this.ynab_auth.get_access_token();
+		auth.value = this.ynabAuth.get_access_token() ? this.ynabAuth.get_access_token() : '';
 
 		const budgets = this.budgetManager.fetch_budgets_cached();
 		if (budgets.length) {
 			document.querySelector('#NoBudgetAlert').classList.add('hide');
+			this.render_budget_list(budgets);
 		}
 
-		this.render_budget_list(budgets);
+		const categories = this.categoryManager.fetch_categories_cached();
+		if ('categories' in categories && categories.categories.length) {
+			document.querySelector('#NoCategoriesAlert').classList.add('hide');
+			this.render_categories_list(categories);
+		}
+	}
+
+	set_auth_key(event) {
+		this.ynabAuth.set_access_token(event.currentTarget.value);
 	}
 
 	fetch_budgets() {
@@ -49,7 +63,6 @@ class YnabConfigManager {
 			this.render_budget_list(budgets);
 		}).catch((err) => this.render_budget_list([]));
 	}
-
 
 	fetch_categories() {
 		var promise = this.categoryManager.fetch_categories_api();
@@ -72,42 +85,55 @@ class YnabConfigManager {
 			document.querySelector('#NoCategoriesAlert').classList.add('hide');
 		}
 
-		var groupTemplates = document.querySelector('#CategoryGroupHeaderTemplate');
-		var categoryTemplates = document.querySelector('#CategorySelectTemplate');
+		let groupTemplates = document.querySelector('#CategoryGroupHeaderTemplate');
+		let categoryTemplates = document.querySelector('#CategorySelectTemplate');
 		document.querySelectorAll('#AvailableCategories optgroup, #AvailableCategories option').forEach(child => child.remove());
-		var category_wrapper = document.querySelector("#AvailableCategories");
+		let category_wrapper = document.querySelector("#AvailableCategories");
 		category_wrapper.classList.remove('hide');
 
-		let groups = new Map();
+		let selected_categories = this.categoryManager.get_selected_categories();
 
 		categories.groups.forEach((group) => {
-			var clone = document.importNode(groupTemplates.content, true);
+			let clone = document.importNode(groupTemplates.content, true);
 			let opt_group = clone.querySelector("optgroup");
 
 			opt_group.setAttribute('label', group.name);
 			opt_group.setAttribute('id', `group-${group.id}`);
 
 			category_wrapper.appendChild(clone);
-
-			//groups.set(group.id, clone);
 		});
 
 		categories.categories.forEach((category) => {
-			var clone = document.importNode(categoryTemplates.content, true);
+			let clone = document.importNode(categoryTemplates.content, true);
 			let option = clone.querySelector("option");
 
 			option.setAttribute('value', category.id);
 			option.textContent = category.name;
-			//@TODO
-			//let test = groups.get(category.group);
-			let test = document.querySelector(`#group-${category.group}`);
+
+			if (selected_categories.includes(category.id)) {
+				option.setAttribute('selected', 'selected');
+			}
+
 			document.querySelector(`#group-${category.group}`).appendChild(clone);
-			//groups.get(category.group).querySelector("optgroup").appendChild(clone);
 		});
+
+		//@todo make on click as well
+		document.querySelector('#AvailableCategories').addEventListener('change', event => this.select_categories(event));
 	}
 
 	select_budget(event) {
 		this.budgetManager.set_selected_budget(event.currentTarget.value);
+	}
+
+	select_categories(event) {
+		let categories = [];
+
+		for (let option of event.currentTarget.selectedOptions) {
+			categories.push(option.value);
+		}
+
+
+		this.categoryManager.set_selected_categories(categories);
 	}
 
 	render_budget_list(budgets) {
