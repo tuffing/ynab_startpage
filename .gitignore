@@ -1,2 +1,4 @@
 config_access_token.js
 sample_categories
+node_modules
+.eslintrc.js

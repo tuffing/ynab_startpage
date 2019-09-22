@@ -1,24 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Ynab start page</title>
 	<meta charset="UTF-8"> 
-	<link rel="preload" href="style.css" as="style">
+	<!--link rel="preload" href="style.css" as="style"-->
+	<link rel="preload" href="minified/style.min.css" as="style">
 	<link rel="preload" as="style"  href="https://cdn.jsdelivr.net/gh/tonsky/FiraCode@1.207/distr/fira_code.css">
 
 
-	<link rel="stylesheet" href="style.css">
+	<!--link rel="stylesheet" href="style.css"-->
+	<link rel="stylesheet" href="minified/style.min.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/tonsky/FiraCode@1.207/distr/fira_code.css">
 
+	<meta name="description" content="Ynab start page, quick progress indicator on budgets">
 </head>
 <body>
-	<script type="text/javascript" src="ynab_auth.js"></script>
-	<script type="text/javascript" src="ynab_request.js"></script>
-	<script type="text/javascript" src="ynab_config_manager.js"></script>
-	<script type="text/javascript" src="ynab_categories_manager.js"></script>
-	<script type="text/javascript" src="ynab_budgets_manager.js"></script>
+	<!--
+	DEV
+	<script src="ynab_auth.js"></script>
+	<script src="ynab_request.js"></script>
+	<script src="ynab_config_manager.js"></script>
+	<script src="ynab_categories_manager.js"></script>
+	<script src="ynab_budgets_manager.js"></script>
+	<script defer src="init.js"></script>
+	-->
 
-	<!--script type="text/javascript" src="config_access_token.js"></script-->
+	<!--
+	PROD-->
+	<script defer src="minified/source.min.js"></script>
 
 	<div id="Categories">
 		<div class="category">
@@ -76,7 +85,7 @@
 
 					<p id="NoCategoriesAlert">No categories loaded.</p>
 
-					<template id="CategoryGroupHeaderTemplate"><optgroup label="Name"/></template>
+					<template id="CategoryGroupHeaderTemplate"><optgroup label="Name"></template>
 					<template id="CategorySelectTemplate"><option value="id">Name</option></template>
 				</div>
 			</div>
@@ -86,15 +95,5 @@
 			</div>
 		</div>
 	</div>
-
-
-	<script>
-		let auth = new YnabAuth();
-		let budgets = new YnabBudgetsManager(auth);
-		let categories = new YnabCategoriesManager(auth, budgets);
-		let config = new YnabConfigManager(auth, budgets, categories);
-
-		categories.fetch_and_render();
-	</script>
 </body>
 </html>

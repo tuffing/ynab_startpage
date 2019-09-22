@@ -5,13 +5,15 @@ class YnabConfigManager {
 		this.categoryManager = categoryManager;
 
 		//set up events
-		document.querySelector('#Setup').addEventListener('click', event => this.toggle_config_screen());
-		document.querySelector('#ConfigWrapper').addEventListener('click', event => this.toggle_config_screen());
-		document.querySelector('#ConfigWrapper .close').addEventListener('click', event => this.toggle_config_screen());
-		document.querySelector('.config-pane').addEventListener('click', event => {event.stopPropagation()});
+		document.querySelector('#Setup').addEventListener('click', () => this.toggle_config_screen());
+		document.querySelector('#ConfigWrapper').addEventListener('click', () => this.toggle_config_screen());
+		document.querySelector('#ConfigWrapper .close').addEventListener('click', () => this.toggle_config_screen());
+		document.querySelector('.config-pane').addEventListener('click', () => {
+			event.stopPropagation();
+		});
 
-		document.querySelector('#YnabFetchBudgets').addEventListener('click', event => this.fetch_budgets());
-		document.querySelector('#YnabFetchCategories').addEventListener('click', event => this.fetch_categories());
+		document.querySelector('#YnabFetchBudgets').addEventListener('click', () => this.fetch_budgets());
+		document.querySelector('#YnabFetchCategories').addEventListener('click', () => this.fetch_categories());
 		document.querySelector('#AuthKey').addEventListener('change', event => this.set_auth_key(event));
 
 		//set up forms
@@ -37,7 +39,11 @@ class YnabConfigManager {
 
 	fill_in_existing_fields() {
 		const auth = document.querySelector('#AuthKey');
-		auth.value = this.ynabAuth.get_access_token() ? this.ynabAuth.get_access_token() : '';
+
+		auth.value = '';
+		if (this.ynabAuth.get_access_token()) {
+			auth.value = this.ynabAuth.get_access_token();
+		}
 
 		const budgets = this.budgetManager.fetch_budgets_cached();
 		if (budgets.length) {
@@ -61,7 +67,7 @@ class YnabConfigManager {
 
 		promise.then((budgets) => {
 			this.render_budget_list(budgets);
-		}).catch((err) => this.render_budget_list([]));
+		}).catch(() => this.render_budget_list([]));
 	}
 
 	fetch_categories() {
@@ -69,21 +75,20 @@ class YnabConfigManager {
 
 		promise.then((categories) => {
 			this.render_categories_list(categories);
-		}).catch((err) => this.render_categories_list([]));
+		}).catch(() => this.render_categories_list([]));
 	}
 
 	render_categories_list(categories) {
-		if (!'categories' in categories || !categories.categories.length) {
+		if (!('categories' in categories) || !categories.categories.length) {
 			document.querySelector('#NoCategoriesAlert').classList.remove('hide');
 			document.querySelector('#NoCategoriesAlert').classList.add('show');
 			document.querySelector("#AvailableCategories").classList.add('hide');
 
 			return;
 		}
-		else {
-			document.querySelector('#NoCategoriesAlert').classList.remove('show');
-			document.querySelector('#NoCategoriesAlert').classList.add('hide');
-		}
+
+		document.querySelector('#NoCategoriesAlert').classList.remove('show');
+		document.querySelector('#NoCategoriesAlert').classList.add('hide');
 
 		let groupTemplates = document.querySelector('#CategoryGroupHeaderTemplate');
 		let categoryTemplates = document.querySelector('#CategorySelectTemplate');
@@ -137,13 +142,12 @@ class YnabConfigManager {
 	}
 
 	render_budget_list(budgets) {
-		if (!budgets.length) {
+		if (!(budgets.length)) {
 			document.querySelector('#NoBudgetAlert').classList.add('show');
 			return;
 		}
-		else {
-			document.querySelector('#NoBudgetAlert').classList.add('hide');
-		}
+
+		document.querySelector('#NoBudgetAlert').classList.add('hide');
 
 		let current_budget = this.budgetManager.get_selected_budget();
 

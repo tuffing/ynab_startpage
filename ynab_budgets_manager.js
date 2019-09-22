@@ -10,7 +10,7 @@ class YnabBudgetsManager {
 		return new Promise((resolve, reject) => {
 			promise.then(json => {
 				let budgets = [];
-				if (!'data' in json || !'budgets' in json.data || !json.data.budgets.length) {
+				if (!('data' in json) || !('budgets' in json.data) || !(json.data.budgets.length)) {
 					resolve(budgets);
 				}
 

@@ -31,7 +31,7 @@ class YnabCategoriesManager {
 			let promise = new Promise((resolve, reject) => {
 				var request = YnabRequest.request_from_endpoint(`budgets/${this.budgetManager.get_selected_budget()}/categories/${category}`, this.ynab_auth);
 				request.then(json => {
-					if (!'data' in json || !'category' in json.data) {
+					if (!('data' in json) || !('category' in json.data)) {
 						return;
 					}
 
@@ -46,7 +46,21 @@ class YnabCategoriesManager {
 		});
 
 		Promise.all(promises).then(() => {
-			//@todo order data alphabetically
+			// sort by name
+			data.sort(function(a, b) {
+				var nameA = a.name.toUpperCase();
+				var nameB = b.name.toUpperCase();
+				if (nameA < nameB) {
+					return -1;
+				}
+				if (nameA > nameB) {
+					return 1;
+				}
+
+				// names must be equal
+				return 0;
+			});
+
 			localStorage.setItem('category_data', JSON.stringify(data));
 			localStorage.setItem('last_fetch', Date.now());
 			this.fetch_and_render();
@@ -66,7 +80,7 @@ class YnabCategoriesManager {
 
 		return new Promise((resolve, reject) => {
 			promise.then(json => {
-				if (!'data' in json || !'category_groups' in json.data || !json.data.category_groups.length) {
+				if (!('data' in json) || !('category_groups' in json.data) || !json.data.category_groups.length) {
 					reject();
 				}
 

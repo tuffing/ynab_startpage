@@ -7,7 +7,7 @@ class YnabAuth {
 			this.set_access_token(access_token);
 		}
 	}
-	
+
 	set_access_token(access_token) {
 		this.access_token = access_token;
 		localStorage.setItem('token', access_token);
@@ -17,5 +17,4 @@ class YnabAuth {
 		this.access_token = localStorage.getItem('token');
 		return this.access_token;
 	}
-
 }
