@@ -23,7 +23,7 @@ First time you load the screen there will be nothing to show.
  7. From the select box select the categories you want to show. Hold down shift to hold multiple
  8. When done either close the dialog box or refresh the page. Your categories should now fetch.
 
-* The startpage will only update once an hour *
+*The startpage will only update once an hour*
 
 ### Firefox new tab screen - using an extension
 
