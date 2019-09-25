@@ -144,15 +144,21 @@ class YnabCategoriesManager {
 		var clone = document.importNode(template.content, true);
 
 		clone.querySelector(".name").textContent = name;
+
 		//math to work out dash offset for 'progress' is the stroke-dasharray - (stroke-dasharray * percentage / 100)
 		//251.2-(251.2×(spent/budgeted))
-		let percentage = spent/budgeted*100;
+
+		let percentage = 100;
+		if (budgeted > spent) {
+			percentage = spent/budgeted*100;
+		}
 		clone.querySelector(".progress").setAttribute('stroke-dashoffset', 251.2-(251.2*percentage/100));
 
-		if (percentage > 55)
-			clone.querySelector(".progress").classList.add('nearing-complete');
+		//flash the progress bar if the current category is over budget relative to that point of the month
+		let now = new Date();
+		let progress_through_month = now.getDate() / new Date(now.getYear(), now.getMonth() + 1, 0).getDate();
 
-		if (percentage > 75)
+		if (spent / (budgeted * progress_through_month) > 1)
 			clone.querySelector(".progress").classList.add('nearing-complete-alert');
 
 

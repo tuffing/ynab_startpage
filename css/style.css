@@ -41,15 +41,11 @@ body {
 }
 
 .category circle {
-	stroke: #777;
-}
-
-.category circle.progress {
 	stroke: rgba(119, 221, 119, .7);
 }
 
-.category circle.nearing-complete {
-	stroke: rgba(252, 94, 85, .4);
+.category circle.progress {
+	stroke: rgba(255, 0, 0, 0.66);
 }
 
 .category circle.nearing-complete-alert {
@@ -66,9 +62,9 @@ body {
 }
 
 @keyframes alert-change {
-    0% { stroke: rgba(252, 94, 85, .4); }
-    50% { stroke: rgba(252, 94, 85, .8); }
-    100% { stroke: rgba(252, 94, 85, .4); }
+    0% { stroke: rgba(252, 94, 85, .6); }
+    50% { stroke: rgba(255, 0, 0, 0.66); }
+    100% { stroke: rgba(252, 94, 85, .6); }
 }
 
 /* config css */
